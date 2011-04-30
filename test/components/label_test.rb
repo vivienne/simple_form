@@ -151,8 +151,12 @@ class LabelTest < ActionView::TestCase
     assert_select 'label.required'
     with_label_for @validating_user, :status, :string
     assert_select 'label.optional'
+    with_label_for @not_bob, :home_picture, :string
+    assert_select 'label.optional'
+    with_label_for @bob, :home_picture, :string
+    assert_select 'label.required'
   end
-
+  
   test 'label should allow overriding required when ActiveModel::Validations is included' do
     with_label_for @validating_user, :name, :string, :required => false
     assert_select 'label.optional'

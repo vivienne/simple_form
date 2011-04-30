@@ -337,6 +337,18 @@ class FormBuilderTest < ActionView::TestCase
     assert_no_select 'input[required]'
     assert_select 'input.optional#user_name'
   end
+  
+  # vivian
+  test 'builder input should check conditional statements in validation' do
+    swap SimpleForm, :required_by_default => false do
+      with_form_for @not_bob, :home_picture
+      assert_no_select 'input[required]'
+      assert_select 'input.optional#test_user_home_picture'
+      
+      with_form_for @bob, :home_picture
+      assert_select 'input[required]'
+    end
+  end
 
   # WRAPPERS
   test 'builder support wrapping around an specific tag' do

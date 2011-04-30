@@ -66,12 +66,30 @@ module SimpleForm
         if !options[:required].nil?
           options[:required]
         elsif has_validators?
-          (attribute_validators + reflection_validators).any? { |v| v.kind == :presence }
+          (attribute_validators + reflection_validators).select { |v| (v.kind == :presence) && validator_relevant?(v) }.any?
         else
           attribute_required_by_default?
         end
       end
+      
+      def validator_relevant?(validator)
+        return true unless validator.options.key?(:if) || validator.options.key?(:unless)
+        conditional = validator.options.key?(:if) ? validator.options[:if] : validator.options[:unless]
 
+        result = if conditional.respond_to?(:call)
+          conditional.call(object)
+        elsif conditional.is_a?(::Symbol) && object.respond_to?(conditional)
+          object.send(conditional)
+        else
+          conditional
+        end
+
+        result = validator.options.key?(:unless) ? !result : !!result
+        #not_required_through_negated_validation! if !result && [:presence, :inclusion, :length].include?(validator.kind)
+
+        result
+      end
+      
       # Whether this input is valid for HTML 5 required attribute.
       def has_required?
         attribute_required? && SimpleForm.use_html5
@@ -86,7 +104,7 @@ module SimpleForm
       end
 
       def attribute_validators
-        object.class.validators_on(attribute_name)
+        object.class.validators_on(attribute_name)         
       end
 
       def reflection_validators

@@ -168,3 +168,8 @@ class OtherValidatingUser < User
     :less_than_or_equal_to => Proc.new { |user| user.age + 100},
     :only_integer => true
 end
+
+class TestUser < User
+  include ActiveModel::Validations
+  validates_presence_of :home_picture, :if => lambda { |u| u.name == "bob" }
+end
